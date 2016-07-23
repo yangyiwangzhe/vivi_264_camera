@@ -25,7 +25,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 	// In some omap devices, system uses /dev/video[0-3],
 	// so users must use /dev/video[4-].
 	// In such a case, try cameraId=0 and cameraBase=4
-	private int cameraId=1;
+	private int cameraId=0;
 	private int cameraBase=0;
 	
 	// This definition also exists in ImageProc.h.
@@ -74,6 +74,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 	
     @Override
     public void run() {
+    	
         while (true && cameraExists) {
         	//obtaining display area to draw a large image
         	if(winWidth==0){
@@ -112,11 +113,12 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
             	break;
             }	        
         }
+        
     }
     
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		if(DEBUG) Log.d(TAG, "123 surfaceCreated");
+		if(DEBUG) Log.d(TAG, "surfaceCreated");
 		if(bmp==null){
 			bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
 		}
@@ -126,7 +128,8 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 		if(ret!=-1) cameraExists = true;
 		
         mainLoop = new Thread(this);
-        mainLoop.start();	
+        mainLoop.start();
+        	
 	}
 	
 	@Override
@@ -137,6 +140,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		if(DEBUG) Log.d(TAG, "surfaceDestroyed");
+		
 		if(cameraExists){
 			shouldStop = true;
 			while(shouldStop){
@@ -146,5 +150,6 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Runna
 			}
 		}
 		stopCamera();
+		
 	}   
 }

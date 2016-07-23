@@ -42,7 +42,6 @@ int opendevice(int i)
 {
 	struct stat st;
 	LOGE("opendevice");
-	 __android_log_print(ANDROID_LOG_INFO,"JNI","Java_com_lt_jni_JNI_print");
 	sprintf(dev_name,"/dev/video%d",i);
 
 	if (-1 == stat (dev_name, &st)) {
@@ -117,7 +116,7 @@ int initdevice(void)
 	fmt.fmt.pix.width       = IMG_WIDTH; 
 	fmt.fmt.pix.height      = IMG_HEIGHT;
 
-	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB565X;
 	fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
 
 	if (-1 == xioctl (fd, VIDIOC_S_FMT, &fmt))
@@ -353,6 +352,8 @@ void yuyv422toABGRY(unsigned char *src)
 	lrgb = &rgb[0];
 	lybuf = &ybuf[0];
 
+
+/*
 	if(yuv_tbl_ready==0){
 		for(i=0 ; i<256 ; i++){
 			y1192_tbl[i] = 1192*(i-16);
@@ -367,8 +368,28 @@ void yuyv422toABGRY(unsigned char *src)
 		}
 		yuv_tbl_ready=1;
 	}
+*/
+	char *prgb = src;
 
 	for(i=0 ; i<frameSize ; i+=4){
+
+		int rgb16_1,rgb16_2,rgb16_3,rgb16_4;
+
+		char rgb8_1,rgb8_2,rgb8_3,rgb8_4;
+
+		rgb8_1 = src[i+0];
+		rgb8_2 = src[i+1];
+		rgb8_3 = src[i+2];
+		rgb8_4 = src[i+3];
+
+		int r_1 = (int)(rgb8_1 & 0xfc);
+		int g_1 = (int)((rgb8_1<<5)|((rgb8_2&0xe0)>>3));
+		int b_1 = (int)(rgb8_2<<3);
+
+
+		*lrgb++ = 0xff000000 |  b_1<<16 | g_1<<8 | r_1;
+		*lrgb++ = 0xff000000 |  b_1<<16 | g_1<<8 | r_1;
+/*
 		unsigned char y1, y2, u, v;
 		y1 = src[i];
 		u = src[i+1];
@@ -399,7 +420,9 @@ void yuyv422toABGRY(unsigned char *src)
 			*lybuf++ = y1;
 			*lybuf++ = y2;
 		}
+*/
 	}
+
 
 }
 
@@ -454,7 +477,6 @@ jint
 Java_com_camera_simplewebcam_CameraPreview_prepareCamera( JNIEnv* env,jobject thiz, jint videoid){
 
 	int ret;
-	LOGE("Java_com_camera_simplewebcam_CameraPreview_prepareCamera1323");
 
 	if(camerabase<0){
 		camerabase = checkCamerabase();
@@ -465,6 +487,7 @@ Java_com_camera_simplewebcam_CameraPreview_prepareCamera( JNIEnv* env,jobject th
 	if(ret != ERROR_LOCAL){
 		ret = initdevice();
 	}
+
 	if(ret != ERROR_LOCAL){
 		ret = startcapturing();
 
